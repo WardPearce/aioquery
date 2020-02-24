@@ -8,5 +8,6 @@ setup(
     author_email='contact@districtnine.host',
     license='Apache License 2.0',
     packages=['aioquery'],
+    install_requires=readfile("requirements.txt").split(),
     zip_safe=False
 )
