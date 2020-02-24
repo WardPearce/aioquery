@@ -160,9 +160,12 @@ class aioquery(object):
 if __name__ == '__main__':
     async def testing():
         query = aioquery("216.52.148.47", 27015)
-        res = await query.get_info()
 
-        print(res)
+        server_info = await query.get_info()
+        players = await query.get_players()
+
+        print(server_info)
+        print(players)
 
     loop = asyncio.get_event_loop()
     loop.run_until_complete(testing())
