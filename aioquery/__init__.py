@@ -1,52 +1,51 @@
-# TODO
-# More game support
-# Player time should be a object.
+# Based off https://github.com/Dasister/Source-Query-Class-Python/blob/master/QueryClass.py
 
 import asyncio
-import socket
+import asyncio_dgram
 import struct
-import time
 
 A2S_INFO = b"\xFF\xFF\xFF\xFFTSource Engine Query\x00"
 A2S_PLAYERS = b"\xFF\xFF\xFF\xFF\x55"
 
-READ_BYTES = 4096
-
 S2A_INFO_SOURCE = chr(0x49)
 
-class source_query(object):
+class aioquery(object):
     __challenge = None
 
-    def __init__(self, ip, port=27015, timeout=5.0):
-        self.ip = socket.gethostbyname(ip)
+    def __init__(self, ip, port=27015):
+        """ Expects ip & port to be passed for the game server to query. """
+
+        self.ip = ip
         self.port = port
-        self.timeout = timeout
+
+    async def send_recv(self, package):
+        try:
+            stream = await asyncio_dgram.connect((self.ip, self.port))
+        except:
+            return False
+        else:
+            await stream.send(package)
+
+            try:
+                data = await stream.recv()
+            except:
+                return False
+            else:
+                return data[0]
 
     async def get_info(self):
         """ Retrieves information about the server including, but not limited to: its name, the map currently being played, and the number of players. """
-        reader, writer = await asyncio.open_connection(self.ip, self.port)
 
-        print(writer)
-
-        writer.write(A2S_INFO)
-        
-        before = time.time()
-
-        try:
-            data = await reader.read(READ_BYTES)
-        except:
+        data = await self.send_recv(A2S_INFO)
+        if data == False:
             return False
 
-        after = time.time()
-        
         data = data[4:]
         header, data = self.__get_byte(data)
 
-        result = {
-            "ping": int((after - before) * 1000)
-        }
-
         if chr(header) == S2A_INFO_SOURCE:
+            result = {}
+            
             result["protocol"], data = self.__get_byte(data)
             result["hostname"], data = self.__get_string(data)
             result["map"], data = self.__get_string(data)
@@ -92,31 +91,29 @@ class source_query(object):
             except:
                 pass
 
-        return result
+            return result
+        else:
+            raise Exception("NonSourceServer")
 
-    def get_challenge(self):
+    async def get_challenge(self):
         """ Get challenge number for A2S_PLAYER query. """
 
-        self.__sock.send(A2S_PLAYERS + b"0xFFFFFFFF")
-        try:
-            data = self.__sock.recv(4096)
-        except:
+        data = await self.send_recv(A2S_PLAYERS + b"0xFFFFFFFF")
+        if data == False:
             return False
 
         self.__challenge = data[5:]
 
-        return True
+        return self.__challenge
 
-    def get_players(self):
+    async def get_players(self):
         """ Retrieve information about the players currently on the server. """
+        
         if self.__challenge is None:
-            self.get_challenge()
+            if await self.get_challenge() == False:
+                return False
 
-        self.__sock.send(A2S_PLAYERS + self.__challenge)
-        try:
-            data = self.__sock.recv(4096)
-        except:
-            return False
+        data = await self.send_recv(A2S_PLAYERS + self.__challenge)
 
         data = data[4:]
 
@@ -162,7 +159,7 @@ class source_query(object):
 
 if __name__ == '__main__':
     async def testing():
-        query = source_query("216.52.148.47", 27015)
+        query = aioquery("216.52.148.47", 27015)
         res = await query.get_info()
 
         print(res)
