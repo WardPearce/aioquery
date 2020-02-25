@@ -1,4 +1,9 @@
 from setuptools import setup
+import os
+
+def get_requirements():
+    with open("requirements.txt") as f:
+        return f.read().splitlines()
 
 setup(
     name='aioquery',
@@ -8,6 +13,6 @@ setup(
     author_email='contact@districtnine.host',
     license='Apache License 2.0',
     packages=['aioquery'],
-    install_requires=readfile("requirements.txt").split(),
+    install_requires=get_requirements(),
     zip_safe=False
 )
