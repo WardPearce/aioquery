@@ -27,7 +27,7 @@ class aioquery(object):
             await stream.send(package)
 
             try:
-                data = await stream.recv()
+                data = await asyncio.wait_for(stream.recv(), 3)
             except:
                 return False
             else:
