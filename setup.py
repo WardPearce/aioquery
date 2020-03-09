@@ -7,7 +7,7 @@ def get_requirements():
 
 setup(
     name='aioquery',
-    version='0.0.1',
+    version='0.0.2',
     description='Asynchronous wrapper for source query.',
     author='WardPearce',
     author_email='contact@districtnine.host',
