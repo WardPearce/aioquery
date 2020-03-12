@@ -12,11 +12,12 @@ S2A_INFO_SOURCE = chr(0x49)
 class aioquery(object):
     __challenge = None
 
-    def __init__(self, ip, port=27015):
+    def __init__(self, ip, port=27015, timeout=3):
         """ Expects ip & port to be passed for the game server to query. """
 
         self.ip = ip
         self.port = port
+        self.timeout = timeout
 
     async def send_recv(self, package):
         try:
@@ -27,7 +28,7 @@ class aioquery(object):
             await stream.send(package)
 
             try:
-                data = await asyncio.wait_for(stream.recv(), 3)
+                data = await asyncio.wait_for(stream.recv(), self.timeout)
             except:
                 return False
             else:
