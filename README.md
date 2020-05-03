@@ -1,7 +1,14 @@
 # Asynchronous Source Query
 
 ## Install
-Install git and run ``pip3 install git+https://github.com/WardPearce/aioquery.git``
+- Pypi: ``pip3 install aioquery``
+- Git: ``pip3 install git+https://github.com/WardPearce/aioquery.git``
+
+## API
+- aioquery(ip, port=27015, timeout=3)
+    - get_info(self)
+    - get_challenge(self)
+    - get_players(self)
 
 ### Example
 ```py

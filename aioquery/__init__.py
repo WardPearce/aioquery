@@ -4,12 +4,14 @@ import asyncio
 import asyncio_dgram
 import struct
 
+__version__ = "0.0.3"
+
 A2S_INFO = b"\xFF\xFF\xFF\xFFTSource Engine Query\x00"
 A2S_PLAYERS = b"\xFF\xFF\xFF\xFF\x55"
 
 S2A_INFO_SOURCE = chr(0x49)
 
-class aioquery(object):
+class aioquery:
     __challenge = None
 
     def __init__(self, ip, port=27015, timeout=3):
