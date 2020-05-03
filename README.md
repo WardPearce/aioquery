@@ -1,5 +1,3 @@
-# Asynchronous Source Query
-
 ## Install
 - Pypi: ``pip3 install aioquery``
 - Git: ``pip3 install git+https://github.com/WardPearce/aioquery.git``
