@@ -1,18 +1,19 @@
-# Based off https://github.com/Dasister/Source-Query-Class-Python/blob/master/QueryClass.py
-
 import asyncio
 import asyncio_dgram
 import struct
 
-__version__ = "0.0.3"
+# Based off https://github.com/Dasister/Source-Query-Class-Python
 
-A2S_INFO = b"\xFF\xFF\xFF\xFFTSource Engine Query\x00"
-A2S_PLAYERS = b"\xFF\xFF\xFF\xFF\x55"
+__version__ = "0.1.0"
 
-S2A_INFO_SOURCE = chr(0x49)
 
-class aioquery:
+class client:
     __challenge = None
+
+    S2A_INFO_SOURCE = chr(0x49)
+
+    A2S_PLAYERS = b"\xFF\xFF\xFF\xFF\x55"
+    A2S_INFO = b"\xFF\xFF\xFF\xFFTSource Engine Query\x00"
 
     def __init__(self, ip, port=27015, timeout=3):
         """ Expects ip & port to be passed for the game server to query. """
@@ -36,19 +37,21 @@ class aioquery:
             else:
                 return data[0]
 
-    async def get_info(self):
-        """ Retrieves information about the server including, but not limited to: its name, the map currently being played, and the number of players. """
+    async def info(self):
+        """ Retrieves information about the server including,
+            but not limited to its name, the map currently being played,
+            and the number of players. """
 
-        data = await self.send_recv(A2S_INFO)
-        if data == False:
+        data = await self.send_recv(self.A2S_INFO)
+        if not data:
             return False
 
         data = data[4:]
         header, data = self.__get_byte(data)
 
-        if chr(header) == S2A_INFO_SOURCE:
+        if chr(header) == self.S2A_INFO_SOURCE:
             result = {}
-            
+
             result["protocol"], data = self.__get_byte(data)
             result["hostname"], data = self.__get_string(data)
             result["map"], data = self.__get_string(data)
@@ -58,7 +61,7 @@ class aioquery:
             result["players"], data = self.__get_byte(data)
             result["max_players"], data = self.__get_byte(data)
             result["bots"], data = self.__get_byte(data)
-            
+
             dedicated, data = self.__get_byte(data)
             if chr(dedicated) == "d":
                 result["dedicated"] = "Dedicated"
@@ -98,42 +101,43 @@ class aioquery:
         else:
             raise Exception("NonSourceServer")
 
-    async def get_challenge(self):
+    async def challenge(self):
         """ Get challenge number for A2S_PLAYER query. """
 
-        data = await self.send_recv(A2S_PLAYERS + b"0xFFFFFFFF")
-        if data == False:
+        data = await self.send_recv(self.A2S_PLAYERS + b"0xFFFFFFFF")
+        if not data:
             return False
 
         self.__challenge = data[5:]
 
         return self.__challenge
 
-    async def get_players(self):
+    async def players(self):
         """ Retrieve information about the players currently on the server. """
-        
+
         if self.__challenge is None:
-            if await self.get_challenge() == False:
+            if not await self.challenge():
                 return False
 
-        data = await self.send_recv(A2S_PLAYERS + self.__challenge)
+        data = await self.send_recv(self.A2S_PLAYERS + self.__challenge)
 
         data = data[4:]
 
-        header, data = self.__get_byte(data)
+        _, data = self.__get_byte(data)
         num, data = self.__get_byte(data)
-        result = []
 
-        for i in range(num):
+        result = []
+        result_append = result.append
+        for index in range(num):
             data = self.__get_byte(data)[1]
 
             player = {}
-            player["id"] = i + 1  # ID of All players is 0
+            player["id"] = index + 1  # ID of All players is 0
             player["name"], data = self.__get_string(data)
             player["frags"], data = self.__get_long(data)
             player["time"], data = self.__get_float(data)
 
-            result.append(player)
+            result_append(player)
 
         return result
 
@@ -160,16 +164,16 @@ class aioquery:
             i += 1
         return s, data[i + 1:]
 
+
 if __name__ == '__main__':
     async def testing():
-        query = aioquery("216.52.148.47", 27015)
+        query = client("216.52.148.47", 27015)
 
-        server_info = await query.get_info()
-        players = await query.get_players()
+        server_info = await query.info()
+        players = await query.players()
 
         print(server_info)
         print(players)
 
     loop = asyncio.get_event_loop()
     loop.run_until_complete(testing())
-    loop.close()
