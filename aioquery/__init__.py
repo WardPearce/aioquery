@@ -66,6 +66,8 @@ class client:
 
             try:
                 data = await asyncio.wait_for(stream.recv(), self.timeout)
+
+                stream.close()
             except Exception:
                 raise DidNotReceive()
             else:
