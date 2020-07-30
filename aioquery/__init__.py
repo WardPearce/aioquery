@@ -1,6 +1,7 @@
-import asyncio
-import asyncio_dgram
 import typing
+
+from asyncio_dgram import connect
+from asyncio import wait_for
 
 from .models import PlayerModel, ServerModel
 from .data_operations import DataOperation
@@ -58,14 +59,14 @@ class client:
         """
 
         try:
-            stream = await asyncio_dgram.connect((self.ip, self.port))
+            stream = await connect((self.ip, self.port))
         except Exception:
             raise UnableToConnect()
         else:
             await stream.send(package)
 
             try:
-                data = await asyncio.wait_for(stream.recv(), self.timeout)
+                data = await wait_for(stream.recv(), self.timeout)
 
                 stream.close()
             except Exception:
