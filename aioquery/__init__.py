@@ -44,7 +44,7 @@ class client:
         ---------
         package: bytes
             Package to send
-        
+
         Returns
         -------
         bytes
