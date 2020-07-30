@@ -1,179 +1,167 @@
 import asyncio
 import asyncio_dgram
-import struct
+import typing
 
-# Based off https://github.com/Dasister/Source-Query-Class-Python
+from .models import PlayerModel, ServerModel
+from .data_operations import DataOperation
+from .exceptions import UnableToConnect, DidNotReceive, InvalidServer
 
-__version__ = "0.1.0"
+
+__version__ = "1.0.0"
 
 
 class client:
-    __challenge = None
+    _challenge = None
 
     S2A_INFO_SOURCE = chr(0x49)
 
     A2S_PLAYERS = b"\xFF\xFF\xFF\xFF\x55"
     A2S_INFO = b"\xFF\xFF\xFF\xFFTSource Engine Query\x00"
 
-    def __init__(self, ip, port=27015, timeout=3):
-        """ Expects ip & port to be passed for the game server to query. """
+    def __init__(self, ip: str, port: int = 27015, timeout: int = 3):
+        """
+        Handles interactions with a source server.
+
+        Paramters
+        ---------
+        ip: str
+            Server IP address.
+        port: int
+            Port of server, defaults to 27015.
+        timeout: int
+            How long to wait for the server, defaults to 3 seconds.
+        """
 
         self.ip = ip
         self.port = port
         self.timeout = timeout
 
-    async def send_recv(self, package):
+    async def _send_recv(self, package: bytes) -> bytes:
+        """
+        Sends and recives data.
+
+        Paramters
+        ---------
+        package: bytes
+            Package to send
+        
+        Returns
+        -------
+        bytes
+
+        Raises
+        ------
+        UnableToConnect
+            Raised when connection fails
+        DidNotReceive
+            Raised when didn't receive data within timeout.
+        """
+
         try:
             stream = await asyncio_dgram.connect((self.ip, self.port))
-        except:
-            return False
+        except Exception:
+            raise UnableToConnect()
         else:
             await stream.send(package)
 
             try:
                 data = await asyncio.wait_for(stream.recv(), self.timeout)
-            except:
-                return False
+            except Exception:
+                raise DidNotReceive()
             else:
                 return data[0]
 
-    async def info(self):
-        """ Retrieves information about the server including,
-            but not limited to its name, the map currently being played,
-            and the number of players. """
+    async def info(self) -> ServerModel:
+        """
+        Returns details around A2S server.
 
-        data = await self.send_recv(self.A2S_INFO)
-        if not data:
-            return False
+        Returns
+        -------
+        ServerModel
+            Holds data around server.
+        """
+
+        data = await self._send_recv(self.A2S_INFO)
 
         data = data[4:]
-        header, data = self.__get_byte(data)
+        header, data = DataOperation(data).byte()
 
         if chr(header) == self.S2A_INFO_SOURCE:
             result = {}
 
-            result["protocol"], data = self.__get_byte(data)
-            result["hostname"], data = self.__get_string(data)
-            result["map"], data = self.__get_string(data)
-            result["game_dir"], data = self.__get_string(data)
-            result["game_desc"], data = self.__get_string(data)
-            result["app_id"], data = self.__get_short(data)
-            result["players"], data = self.__get_byte(data)
-            result["max_players"], data = self.__get_byte(data)
-            result["bots"], data = self.__get_byte(data)
+            result["protocol"], data = DataOperation(data).byte()
+            result["hostname"], data = DataOperation(data).string()
+            result["map"], data = DataOperation(data).string()
+            result["game_dir"], data = DataOperation(data).string()
+            result["game_desc"], data = DataOperation(data).string()
+            result["app_id"], data = DataOperation(data).short()
+            result["players"], data = DataOperation(data).byte()
+            result["max_players"], data = DataOperation(data).byte()
+            result["bots"], data = DataOperation(data).byte()
 
-            dedicated, data = self.__get_byte(data)
-            if chr(dedicated) == "d":
-                result["dedicated"] = "Dedicated"
-            elif dedicated == 'l':
-                result["dedicated"] = "Listen"
-            else:
-                result["dedicated"] = 'SourceTV'
+            dedicated, data = DataOperation(data).byte()
+            result["dedicated"] = chr(dedicated)
 
-            os, data = self.__get_byte(data)
-            if chr(os) == "w":
-                result["os"] = "Windows"
-            elif chr(os) in ("m", "o"):
-                result["os"] = "Mac"
-            else:
-                result["os"] = "Linux"
+            os, data = DataOperation(data).byte()
+            result["os"] = chr(os)
 
-            result["password"], data = self.__get_byte(data)
-            result["secure"], data = self.__get_byte(data)
-            result["version"], data = self.__get_string(data)
+            result["password"], data = DataOperation(data).byte()
+            result["secure"], data = DataOperation(data).byte()
+            result["version"], data = DataOperation(data).string()
 
-            edf, data = self.__get_byte(data)
+            edf, data = DataOperation(data).byte()
 
             try:
                 if edf & 0x80:
-                    result["game_port"], data = self.__get_short(data)
+                    result["game_port"], data = DataOperation(data).short()
                 if edf & 0x10:
-                    result["steamid"], data = self.__get_long_long(data)
+                    result["steamid"], data = DataOperation(data).long_long()
                 if edf & 0x40:
-                    result["spec_port"], data = self.__get_short(data)
-                    result["spec_name"], data = self.__get_string(data)
+                    result["spec_port"], data = DataOperation(data).short()
+                    result["spec_name"], data = DataOperation(data).string()
                 if edf & 0x10:
-                    result["tags"], data = self.__get_string(data)
-            except:
+                    result["tags"], data = DataOperation(data).string()
+            except Exception:
                 pass
 
-            return result
+            return ServerModel(result)
         else:
-            raise Exception("NonSourceServer")
+            raise InvalidServer()
 
-    async def challenge(self):
+    async def challenge(self) -> bytes:
         """ Get challenge number for A2S_PLAYER query. """
 
-        data = await self.send_recv(self.A2S_PLAYERS + b"0xFFFFFFFF")
-        if not data:
-            return False
+        data = await self._send_recv(self.A2S_PLAYERS + b"0xFFFFFFFF")
+        self._challenge = data[5:]
 
-        self.__challenge = data[5:]
+        return self._challenge
 
-        return self.__challenge
+    async def players(self) -> typing.AsyncGenerator[typing.Any, None]:
+        """
+        Yields players on server.
 
-    async def players(self):
-        """ Retrieve information about the players currently on the server. """
+        Yields
+        ------
+        PlayerModel
+            Holds player data.
+        """
 
-        if self.__challenge is None:
-            if not await self.challenge():
-                return False
+        if self._challenge is None:
+            await self.challenge()
 
-        data = await self.send_recv(self.A2S_PLAYERS + self.__challenge)
-
+        data = await self._send_recv(self.A2S_PLAYERS + self._challenge)
         data = data[4:]
 
-        _, data = self.__get_byte(data)
-        num, data = self.__get_byte(data)
+        _, data = DataOperation(data).byte()
+        num, data = DataOperation(data).byte()
 
-        result = []
-        result_append = result.append
         for index in range(num):
-            data = self.__get_byte(data)[1]
+            _, data = DataOperation(data).byte()
 
             player = {}
-            player["id"] = index + 1  # ID of All players is 0
-            player["name"], data = self.__get_string(data)
-            player["frags"], data = self.__get_long(data)
-            player["time"], data = self.__get_float(data)
+            player["id"] = index + 1
+            player["name"], data = DataOperation(data).string()
+            player["frags"], data = DataOperation(data).long()
+            player["time"], data = DataOperation(data).float()
 
-            result_append(player)
-
-        return result
-
-    def __get_byte(self, data):
-        return data[0], data[1:]
-
-    def __get_short(self, data):
-        return struct.unpack("<h", data[0:2])[0], data[2:]
-
-    def __get_long(self, data):
-        return struct.unpack("<l", data[0:4])[0], data[4:]
-
-    def __get_long_long(self, data):
-        return struct.unpack("<Q", data[0:8])[0], data[8:]
-
-    def __get_float(self, data):
-        return struct.unpack("<f", data[0:4])[0], data[4:]
-
-    def __get_string(self, data):
-        s = ""
-        i = 0
-        while chr(data[i]) != "\x00":
-            s += chr(data[i])
-            i += 1
-        return s, data[i + 1:]
-
-
-if __name__ == '__main__':
-    async def testing():
-        query = client("216.52.148.47", 27015)
-
-        server_info = await query.info()
-        players = await query.players()
-
-        print(server_info)
-        print(players)
-
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(testing())
+            yield PlayerModel(player)
