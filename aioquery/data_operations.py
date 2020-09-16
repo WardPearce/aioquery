@@ -6,19 +6,24 @@ class DataOperation:
         self.data = data
 
     def byte(self):
-        return self.data[0], self.data[1:]
+        self.data[1:]
+        return self.data[0]
 
     def short(self):
-        return unpack("<h", self.data[0:2])[0], self.data[2:]
+        self.data = self.data[2:]
+        return unpack("<h", self.data[0:2])[0]
 
     def long(self):
-        return unpack("<l", self.data[0:4])[0], self.data[4:]
+        self.data = self.data[4:]
+        return unpack("<l", self.data[0:4])[0]
 
     def long_long(self):
-        return unpack("<Q", self.data[0:8])[0], self.data[8:]
+        self.data = self.data[8:]
+        return unpack("<Q", self.data[0:8])[0]
 
     def float(self):
-        return unpack("<f", self.data[0:4])[0], self.data[4:]
+        self.data = self.data[4:]
+        return unpack("<f", self.data[0:4])[0]
 
     def string(self):
         string = ""
@@ -28,4 +33,5 @@ class DataOperation:
             string += chr(self.data[iterate])
             iterate += 1
 
-        return string, self.data[iterate + 1:]
+        self.data = self.data[iterate + 1:]
+        return string

@@ -1,17 +1,22 @@
 import typing
 
 from asyncio_dgram import connect
-from asyncio import wait_for
+from asyncio import wait_for, TimeoutError
 
 from .models import PlayerModel, ServerModel
 from .data_operations import DataOperation
 from .exceptions import UnableToConnect, DidNotReceive, InvalidServer
 
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
+__url__ = "https://aioquery.readthedocs.io/en/latest/"
+__description__ = "Asynchronous source A2S."
+__author__ = "WardPearce"
+__author_email__ = "wardpearce@protonmail.com"
+__license__ = "GPL v3"
 
 
-class client:
+class AioQuery:
     _challenge = None
 
     S2A_INFO_SOURCE = chr(0x49)
@@ -20,8 +25,7 @@ class client:
     A2S_INFO = b"\xFF\xFF\xFF\xFFTSource Engine Query\x00"
 
     def __init__(self, ip: str, port: int = 27015, timeout: int = 3):
-        """
-        Handles interactions with a source server.
+        """Handles interactions with a source server.
 
         Paramters
         ---------
@@ -38,8 +42,7 @@ class client:
         self.timeout = timeout
 
     async def _send_recv(self, package: bytes) -> bytes:
-        """
-        Sends and recives data.
+        """Sends and recives data.
 
         Paramters
         ---------
@@ -60,23 +63,22 @@ class client:
 
         try:
             stream = await connect((self.ip, self.port))
-        except Exception:
+        except Exception as e:
+            print(e)
             raise UnableToConnect()
         else:
             await stream.send(package)
 
             try:
                 data = await wait_for(stream.recv(), self.timeout)
-
-                stream.close()
-            except Exception:
+            except TimeoutError:
                 raise DidNotReceive()
             else:
+                stream.close()
                 return data[0]
 
     async def info(self) -> ServerModel:
-        """
-        Returns details around A2S server.
+        """Returns details around A2S server.
 
         Returns
         -------
@@ -87,52 +89,51 @@ class client:
         data = await self._send_recv(self.A2S_INFO)
 
         data = data[4:]
-        header, data = DataOperation(data).byte()
+
+        data_opts = DataOperation(data)
+
+        header = data_opts.byte()
 
         if chr(header) == self.S2A_INFO_SOURCE:
-            result = {}
+            result = {
+                "protocol": data_opts.byte(),
+                "hostname": data_opts.string(),
+                "map": data_opts.string(),
+                "game_dir": data_opts.string(),
+                "game_desc": data_opts.string(),
+                "app_id": data_opts.short(),
+                "players": data_opts.byte(),
+                "max_players": data_opts.byte(),
+                "bots": data_opts.byte(),
+                "dedicated": chr(data_opts.byte()),
+                "os": chr(data_opts.byte()),
+                "password": data_opts.byte(),
+                "secure": data_opts.byte(),
+                "version": data_opts.string()
+            }
 
-            result["protocol"], data = DataOperation(data).byte()
-            result["hostname"], data = DataOperation(data).string()
-            result["map"], data = DataOperation(data).string()
-            result["game_dir"], data = DataOperation(data).string()
-            result["game_desc"], data = DataOperation(data).string()
-            result["app_id"], data = DataOperation(data).short()
-            result["players"], data = DataOperation(data).byte()
-            result["max_players"], data = DataOperation(data).byte()
-            result["bots"], data = DataOperation(data).byte()
+            edf = data_opts.byte()
 
-            dedicated, data = DataOperation(data).byte()
-            result["dedicated"] = chr(dedicated)
+            if edf:
+                result["game_port"] = data_opts.short()
 
-            os, data = DataOperation(data).byte()
-            result["os"] = chr(os)
+            if edf:
+                result["steamid"] = data_opts.long_long()
 
-            result["password"], data = DataOperation(data).byte()
-            result["secure"], data = DataOperation(data).byte()
-            result["version"], data = DataOperation(data).string()
+            if edf:
+                result["spec_port"] = data_opts.short()
+                result["spec_name"] = data_opts.string()
 
-            edf, data = DataOperation(data).byte()
-
-            try:
-                if edf & 0x80:
-                    result["game_port"], data = DataOperation(data).short()
-                if edf & 0x10:
-                    result["steamid"], data = DataOperation(data).long_long()
-                if edf & 0x40:
-                    result["spec_port"], data = DataOperation(data).short()
-                    result["spec_name"], data = DataOperation(data).string()
-                if edf & 0x10:
-                    result["tags"], data = DataOperation(data).string()
-            except Exception:
-                pass
+            if edf:
+                result["tags"] = data_opts.string()
 
             return ServerModel(result)
         else:
             raise InvalidServer()
 
     async def challenge(self) -> bytes:
-        """ Get challenge number for A2S_PLAYER query. """
+        """Get challenge number for A2S_PLAYER query.
+        """
 
         data = await self._send_recv(self.A2S_PLAYERS + b"0xFFFFFFFF")
         self._challenge = data[5:]
@@ -140,8 +141,7 @@ class client:
         return self._challenge
 
     async def players(self) -> typing.AsyncGenerator[typing.Any, None]:
-        """
-        Yields players on server.
+        """Yields players on server.
 
         Yields
         ------
@@ -155,16 +155,18 @@ class client:
         data = await self._send_recv(self.A2S_PLAYERS + self._challenge)
         data = data[4:]
 
-        _, data = DataOperation(data).byte()
-        num, data = DataOperation(data).byte()
+        data_opts = DataOperation(data)
 
-        for index in range(num):
-            _, data = DataOperation(data).byte()
+        data_opts.byte()
+        number = data_opts.byte()
 
-            player = {}
-            player["id"] = index + 1
-            player["name"], data = DataOperation(data).string()
-            player["frags"], data = DataOperation(data).long()
-            player["time"], data = DataOperation(data).float()
+        for index in range(number):
+
+            player = {
+                "id": index + 1,
+                "name": data_opts.string(),
+                "frags": data_opts.long(),
+                "time": data_opts.float()
+            }
 
             yield PlayerModel(player)

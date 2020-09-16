@@ -1,7 +1,6 @@
 import os
 import re
 
-
 from setuptools import setup
 
 
@@ -15,25 +14,28 @@ def get_long_description():
         return f.read()
 
 
-def get_version(package):
-    with open(os.path.join(package, "__init__.py")) as f:
+def get_variable(variable):
+    with open(os.path.join("aioquery", "__init__.py")) as f:
         return re.search(
-            "__version__ = ['\"]([^'\"]+)['\"]", f.read()
+            "{} = ['\"]([^'\"]+)['\"]".format(variable), f.read()
         ).group(1)
 
 
 setup(
     name="aioquery",
-    version=get_version("aioquery"),
-    url="https://github.com/WardPearce/aioquery",
-    description="Asynchronous wrapper for source query.",
+    version=get_variable("__version__"),
+    url=get_variable("__url__"),
+    description=get_variable("__description__"),
     long_description=get_long_description(),
     long_description_content_type="text/markdown",
-    author="WardPearce",
-    author_email="wardpearce@protonmail.com",
+    author=get_variable("__author__"),
+    author_email=get_variable("__author_email__"),
     install_requires=get_requirements(),
-    license="Apache License 2.0",
-    packages=["aioquery"],
+    license=get_variable("__license__"),
+    packages=[
+        "aioquery",
+        "aioquery.tests",
+    ],
     python_requires=">=3.6",
     include_package_data=True,
     zip_safe=False
