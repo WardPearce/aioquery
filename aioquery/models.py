@@ -50,10 +50,8 @@ class ServerModel:
         self.password = data["password"]
         self.secure = bool(data["secure"])
         self.version = data["version"]
-
-        self.game_port = data["game_port"] if "game_port" in data else None
-        self.steamid = data["steamid"] if "steamid" in data else None
-        self.spec_port = data["spec_port"] if "spec_port" in data else None
-        self.spec_name = data["spec_name"] if "spec_name" in data else None
-        self.tags = data["tags"].split(",") if "tags" in data and \
-            "," in data else None
+        self.game_port = data["game_port"]
+        self.steamid = data["steamid"]
+        self.spec_port = data["spec_port"]
+        self.spec_name = data["spec_name"]
+        self.tags = data["tags"].split(",") if "," in data else None
