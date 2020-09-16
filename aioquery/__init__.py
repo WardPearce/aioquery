@@ -63,8 +63,7 @@ class AioQuery:
 
         try:
             stream = await connect((self.ip, self.port))
-        except Exception as e:
-            print(e)
+        except Exception:
             raise UnableToConnect()
         else:
             await stream.send(package)
