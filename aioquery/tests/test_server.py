@@ -10,7 +10,7 @@ class AioQueryTest(asynctest.TestCase):
 
     async def setUp(self):
         test_servers = [
-            "216.52.148.47",
+            "185.107.96.107",
             "92.119.148.18",
             "74.91.119.188",
             "74.91.113.83",
@@ -36,6 +36,8 @@ class AioQueryTest(asynctest.TestCase):
         self.assertTrue(type(info) == ServerModel)
 
     async def test_players(self):
+        self.assertIsNot(self.client, None)
+
         async for player in self.client.players():
             self.assertTrue(
                 type(player) == PlayerModel

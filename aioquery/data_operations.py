@@ -1,29 +1,34 @@
 from struct import unpack
 
 
-class DataOperation:
+class DataOperations:
     def __init__(self, data: bytes) -> None:
         self.data = data
 
     def byte(self):
-        self.data[1:]
-        return self.data[0]
+        data = self.data[0]
+        self.data = self.data[1:]
+        return data
 
     def short(self):
+        data = unpack("<h", self.data[0:2])[0]
         self.data = self.data[2:]
-        return unpack("<h", self.data[0:2])[0]
+        return data
 
     def long(self):
+        data = unpack("<l", self.data[0:4])[0]
         self.data = self.data[4:]
-        return unpack("<l", self.data[0:4])[0]
+        return data
 
     def long_long(self):
+        data = unpack("<Q", self.data[0:8])[0]
         self.data = self.data[8:]
-        return unpack("<Q", self.data[0:8])[0]
+        return data
 
     def float(self):
+        data = unpack("<f", self.data[0:4])[0]
         self.data = self.data[4:]
-        return unpack("<f", self.data[0:4])[0]
+        return data
 
     def string(self):
         string = ""

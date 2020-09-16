@@ -4,7 +4,7 @@ from asyncio_dgram import connect
 from asyncio import wait_for, TimeoutError
 
 from .models import PlayerModel, ServerModel
-from .data_operations import DataOperation
+from .data_operations import DataOperations
 from .exceptions import UnableToConnect, DidNotReceive, InvalidServer
 
 
@@ -85,11 +85,9 @@ class AioQuery:
             Holds data around server.
         """
 
-        data = await self._send_recv(self.A2S_INFO)
-
-        data = data[4:]
-
-        data_opts = DataOperation(data)
+        data_opts = DataOperations(
+            (await self._send_recv(self.A2S_INFO))[4:]
+        )
 
         header = data_opts.byte()
 
@@ -111,19 +109,11 @@ class AioQuery:
                 "version": data_opts.string()
             }
 
-            edf = data_opts.byte()
-
-            if edf:
+            if data_opts.byte():
                 result["game_port"] = data_opts.short()
-
-            if edf:
                 result["steamid"] = data_opts.long_long()
-
-            if edf:
                 result["spec_port"] = data_opts.short()
                 result["spec_name"] = data_opts.string()
-
-            if edf:
                 result["tags"] = data_opts.string()
 
             return ServerModel(result)
@@ -151,15 +141,15 @@ class AioQuery:
         if self._challenge is None:
             await self.challenge()
 
-        data = await self._send_recv(self.A2S_PLAYERS + self._challenge)
-        data = data[4:]
-
-        data_opts = DataOperation(data)
+        data_opts = DataOperations(
+            (await self._send_recv(self.A2S_PLAYERS + self._challenge))[4:]
+        )
 
         data_opts.byte()
         number = data_opts.byte()
 
         for index in range(number):
+            data_opts.byte()
 
             player = {
                 "id": index + 1,
