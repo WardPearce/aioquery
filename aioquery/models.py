@@ -1,4 +1,15 @@
 class PlayerModel:
+    """Holds details on players.
+
+    Attributes
+    ----------
+    id: int
+        ID of user on the server, not a steam ID.
+    name: str
+    frags: int
+    time: float
+    """
+
     def __init__(self, data: dict) -> None:
         self.id = data["id"]
         self.name = data["name"]
@@ -7,6 +18,15 @@ class PlayerModel:
 
 
 class OSModel:
+    """Holds details on OS
+
+    Attributes
+    ----------
+    windows: bool
+    linux: bool
+    mac: bool
+    """
+
     windows = False
     linux = False
     mac = False
@@ -21,6 +41,15 @@ class OSModel:
 
 
 class DedicatedModel:
+    """Holds details on dedicated
+
+    Attributes
+    ----------
+    dedicated: bool
+    listen: bool
+    source_tv: bool
+    """
+
     dedicated = False
     listen = False
     source_tv = False
@@ -35,6 +64,31 @@ class DedicatedModel:
 
 
 class ServerModel:
+    """Holds details on server.
+
+    Attributes
+    ----------
+    protocol: byte
+    hostname: str
+    map: str
+    game_dir: str
+    game_desc: str
+    app_id: int
+    players: int
+    max_players: int
+    bots: int
+    dedicated: DedicatedModel
+    os: OSModel
+    password: str
+    secure: bool
+    version: str
+    game_port: int
+    steamid: int
+    spec_port: int
+    spec_name: str
+    tags: list
+    """
+
     def __init__(self, data: dict) -> None:
         self.protocol = data["protocol"]
         self.hostname = data["hostname"]

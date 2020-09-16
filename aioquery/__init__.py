@@ -16,7 +16,7 @@ __author_email__ = "wardpearce@protonmail.com"
 __license__ = "Apache-2.0 License"
 
 
-class AioQuery:
+class Server:
     _challenge = None
 
     S2A_INFO_SOURCE = chr(0x49)
@@ -129,7 +129,7 @@ class AioQuery:
 
         return self._challenge
 
-    async def players(self) -> typing.AsyncGenerator[typing.Any, None]:
+    async def players(self) -> typing.AsyncGenerator[PlayerModel, None]:
         """Yields players on server.
 
         Yields

@@ -1,6 +1,6 @@
 import asynctest
 
-from .. import AioQuery
+from .. import Server
 from ..models import ServerModel, PlayerModel
 from ..exceptions import UnableToConnect, DidNotReceive
 
@@ -22,7 +22,7 @@ class AioQueryTest(asynctest.TestCase):
 
         for server in test_servers:
             try:
-                self.client = AioQuery(server)
+                self.client = Server(server)
             except (UnableToConnect, DidNotReceive):
                 pass
             else:
@@ -45,4 +45,4 @@ class AioQueryTest(asynctest.TestCase):
 
     async def test_errors(self):
         with self.assertRaises((DidNotReceive, UnableToConnect)):
-            await AioQuery("").info()
+            await Server("").info()
