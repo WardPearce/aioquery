@@ -21,8 +21,9 @@ class AioQueryTest(asynctest.TestCase):
         self.client = None
 
         for server in test_servers:
+            self.client = Server(server)
             try:
-                self.client = Server(server)
+                await self.client.challenge()
             except (UnableToConnect, DidNotReceive):
                 pass
             else:
