@@ -2,7 +2,7 @@ Intro
 =====
 
 Aioquery was originally created for my SourceQueryBot Discord bot.
-After seeing the lack of any awaiting A2S wrappers I decided to package it.
+After seeing the lack of any awaiting A2S wrappers I decided to turn it into a package.
 
 
 Getting server details
