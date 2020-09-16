@@ -13,7 +13,7 @@ __url__ = "https://aioquery.readthedocs.io/en/latest/"
 __description__ = "Asynchronous source A2S."
 __author__ = "WardPearce"
 __author_email__ = "wardpearce@protonmail.com"
-__license__ = "GPL v3"
+__license__ = "Apache-2.0 License"
 
 
 class AioQuery:
