@@ -1,2 +1,3 @@
 asyncio-dgram>=1.0.1
-asynctest>=0.13.0
+asynctest>=0.13.
+sphinxcontrib-trio

@@ -13,6 +13,18 @@ Aioquery is a small source A2S wrapper.
 - Easy to use with an object oriented design.
 - 100% test coverage.
 
+Install
+-------
+
+Pip: ::
+
+      pip3 install aioquery
+
+Git: ::
+
+      pip3 install git+https://github.com/WardPearce/aioquery.git
+
+
 Documentation Contents
 -----------------------
 
