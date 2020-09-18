@@ -10,7 +10,6 @@ class AioQueryTest(asynctest.TestCase):
 
     async def setUp(self):
         test_servers = [
-            "185.107.96.107",
             "92.119.148.18",
             "74.91.119.188",
             "74.91.113.83",

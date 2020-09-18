@@ -1,3 +1,6 @@
+ENCODING = "utf-8"
+
+
 class PlayerModel:
     """Holds details on players.
 
@@ -12,7 +15,7 @@ class PlayerModel:
 
     def __init__(self, data: dict) -> None:
         self.id = data["id"]
-        self.name = data["name"]
+        self.name = data["name"].encode(ENCODING).decode(ENCODING)
         self.frags = data["frags"]
         self.time = data["time"]
 
@@ -91,7 +94,7 @@ class ServerModel:
 
     def __init__(self, data: dict) -> None:
         self.protocol = data["protocol"]
-        self.hostname = data["hostname"]
+        self.hostname = data["hostname"].encode(ENCODING).decode(ENCODING)
         self.map = data["map"]
         self.game_dir = data["game_dir"]
         self.game_desc = data["game_desc"]
