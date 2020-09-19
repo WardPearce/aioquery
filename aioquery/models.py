@@ -1,4 +1,5 @@
-ENCODING = "utf-8"
+ENCODING_UTF = "utf-8"
+ENCODING_LATIN = "latin-1"
 
 
 class PlayerModel:
@@ -15,7 +16,7 @@ class PlayerModel:
 
     def __init__(self, data: dict) -> None:
         self.id = data["id"]
-        self.name = data["name"].encode(ENCODING).decode(ENCODING)
+        self.name = data["name"].encode(ENCODING_LATIN).decode(ENCODING_UTF)
         self.frags = data["frags"]
         self.time = data["time"]
 
@@ -94,7 +95,7 @@ class ServerModel:
 
     def __init__(self, data: dict) -> None:
         self.protocol = data["protocol"]
-        self.hostname = data["hostname"].encode(ENCODING).decode(ENCODING)
+        self.hostname = data["hostname"].encode(ENCODING_LATIN).decode(ENCODING_UTF)
         self.map = data["map"]
         self.game_dir = data["game_dir"]
         self.game_desc = data["game_desc"]
