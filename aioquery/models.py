@@ -95,7 +95,8 @@ class ServerModel:
 
     def __init__(self, data: dict) -> None:
         self.protocol = data["protocol"]
-        self.hostname = data["hostname"].encode(ENCODING_LATIN).decode(ENCODING_UTF)
+        self.hostname = data["hostname"].encode(
+            ENCODING_LATIN).decode(ENCODING_UTF)
         self.map = data["map"]
         self.game_dir = data["game_dir"]
         self.game_desc = data["game_desc"]
