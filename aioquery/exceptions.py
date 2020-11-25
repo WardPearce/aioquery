@@ -1,18 +1,25 @@
-class UnableToConnect(Exception):
+class AioQueryException(Exception):
+    """Base exception.
+    """
+
+    pass
+
+
+class UnableToConnect(AioQueryException):
     """Raised when connection fails.
     """
 
     pass
 
 
-class DidNotReceive(Exception):
+class DidNotReceive(AioQueryException):
     """Raised when no data received.
     """
 
     pass
 
 
-class InvalidServer(Exception):
+class InvalidServer(AioQueryException):
     """Raised when given server isn't a source server.
     """
 
