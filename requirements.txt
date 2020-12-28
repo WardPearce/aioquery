@@ -1,3 +1,4 @@
 asyncio-dgram>=1.0.1
 asynctest>=0.13.
 sphinxcontrib-trio
+git+https://github.com/bashtage/sphinx-material.git
