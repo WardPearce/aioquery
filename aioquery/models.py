@@ -91,8 +91,8 @@ class ServerModel:
     spec_port: int
     spec_name: str
     tags: list
+    gameid: int
     """
-
     def __init__(self, data: dict) -> None:
         self.protocol = data["protocol"]
         self.hostname = data["hostname"].encode(
@@ -109,8 +109,9 @@ class ServerModel:
         self.password = data["password"]
         self.secure = bool(data["secure"])
         self.version = data["version"]
-        self.game_port = data["game_port"]
-        self.steamid = data["steamid"]
-        self.spec_port = data["spec_port"]
-        self.spec_name = data["spec_name"]
-        self.tags = data["tags"].split(",") if "," in data else None
+        self.game_port = data.get("game_port")
+        self.steamid = data.get("steamid")
+        self.spec_port = data.get("spec_port")
+        self.spec_name = data.get("spec_name")
+        self.tags = data.get("tags")
+        self.gameid = data.get("gameid")

@@ -109,12 +109,24 @@ class Server:
                 "version": data_opts.string()
             }
 
-            if data_opts.byte():
-                result["game_port"] = data_opts.short()
-                result["steamid"] = data_opts.long_long()
-                result["spec_port"] = data_opts.short()
-                result["spec_name"] = data_opts.string()
-                result["tags"] = data_opts.string()
+            if len(data_opts.data) != 0:
+                edf = data_opts.byte() # Extra Data Flag
+
+                if edf & 0x80:
+                    result["game_port"] = data_opts.short()
+
+                if edf & 0x10:
+                    result["steamid"] = data_opts.long_long()
+
+                if edf & 0x40:
+                    result["spec_port"] = data_opts.short()
+                    result["spec_name"] = data_opts.string()
+
+                if edf & 0x20:
+                    result["tags"] = data_opts.string().split(",")
+
+                if edf & 0x01:
+                    result["gameid"] = data_opts.long_long()
 
             return ServerModel(result)
         else:
