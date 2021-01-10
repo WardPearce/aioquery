@@ -110,7 +110,7 @@ class Server:
             }
 
             if data_opts.data:
-                edf = data_opts.byte() # Extra Data Flag
+                edf = data_opts.byte()  # Extra Data Flag
 
                 if edf & 0x80:
                     result["game_port"] = data_opts.short()
