@@ -109,7 +109,7 @@ class Server:
                 "version": data_opts.string()
             }
 
-            if len(data_opts.data) != 0:
+            if data_opts.data:
                 edf = data_opts.byte() # Extra Data Flag
 
                 if edf & 0x80:
