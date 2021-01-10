@@ -8,7 +8,7 @@ from .data_operations import DataOperations
 from .exceptions import UnableToConnect, DidNotReceive, InvalidServer
 
 
-__version__ = "1.1.3"
+__version__ = "1.1.4"
 __url__ = "https://aioquery.readthedocs.io/en/latest/"
 __description__ = "Asynchronous source A2S."
 __author__ = "WardPearce"
