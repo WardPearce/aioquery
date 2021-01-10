@@ -34,6 +34,7 @@ Documentation Contents
    intro
    api
    models
+   exceptions
 
 
 
