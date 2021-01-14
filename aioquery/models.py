@@ -113,6 +113,10 @@ class ServerModel:
         self.game_port = data.get("game_port")
         self.steamid = data.get("steamid")
         self.spec_port = data.get("spec_port")
+        if data.get("spec_name"):
+            self.spec_name = data.get("spec_name").encode(
+                ENCODING_LATIN).decode(ENCODING_UTF)
         self.spec_name = data.get("spec_name")
-        self.tags = data.get("tags")
+        self.tags = [i.encode(ENCODING_LATIN).decode(
+            ENCODING_UTF) for i in data.get('tags')]
         self.gameid = data.get("gameid")
