@@ -1,5 +1,4 @@
-ENCODING_UTF = "utf-8"
-ENCODING_LATIN = "latin-1"
+from .decorators import string_encoding
 
 
 class PlayerModel:
@@ -14,11 +13,12 @@ class PlayerModel:
     time: float
     """
 
-    def __init__(self, data: dict) -> None:
-        self.id = data["id"]
-        self.name = data["name"].encode(ENCODING_LATIN).decode(ENCODING_UTF)
-        self.frags = data["frags"]
-        self.time = data["time"]
+    @string_encoding(["name"])
+    def __init__(self, id: int, name: str, frags: int, time: float) -> None:
+        self.id = id
+        self.name = name
+        self.frags = frags
+        self.time = time
 
 
 class OSModel:
@@ -72,7 +72,7 @@ class ServerModel:
 
     Attributes
     ----------
-    protocol: byte
+    protocol: bytes
     hostname: str
     map: str
     game_dir: str
@@ -87,31 +87,46 @@ class ServerModel:
     secure: bool
     version: str
     game_port: int
+        By default None
     steamid: int
+        By default None
     spec_port: int
+        By default None
     spec_name: str
+        By default None
     tags: list
+        By default None
     gameid: int
+        By default None
     """
-    def __init__(self, data: dict) -> None:
-        self.protocol = data["protocol"]
-        self.hostname = data["hostname"].encode(
-            ENCODING_LATIN).decode(ENCODING_UTF)
-        self.map = data["map"]
-        self.game_dir = data["game_dir"]
-        self.game_desc = data["game_desc"]
-        self.app_id = data["app_id"]
-        self.players = data["players"]
-        self.max_players = data["max_players"]
-        self.bots = data["bots"]
-        self.dedicated = DedicatedModel(data["dedicated"])
-        self.os = OSModel(data["os"])
-        self.password = data["password"]
-        self.secure = bool(data["secure"])
-        self.version = data["version"]
-        self.game_port = data.get("game_port")
-        self.steamid = data.get("steamid")
-        self.spec_port = data.get("spec_port")
-        self.spec_name = data.get("spec_name")
-        self.tags = data.get("tags")
-        self.gameid = data.get("gameid")
+
+    @string_encoding(["hostname", "spec_name", "tags", "game_desc",
+                      "game_dir"])
+    def __init__(self, protocol: bytes, hostname: str, map: str,
+                 game_dir: str, game_desc: str, app_id: int,
+                 players: int, max_players: int, bots: int,
+                 dedicated: str, os: str, password: str,
+                 secure: int, version: str, game_port: int = None,
+                 steamid: int = None, spec_port: int = None,
+                 spec_name: str = None, tags: str = None,
+                 gameid: int = None) -> None:
+        self.protocol = protocol
+        self.hostname = hostname
+        self.map = map
+        self.game_dir = game_dir
+        self.game_desc = game_desc
+        self.app_id = app_id
+        self.players = players
+        self.max_players = max_players
+        self.bots = bots
+        self.dedicated = DedicatedModel(dedicated)
+        self.os = OSModel(os)
+        self.password = password
+        self.secure = bool(secure)
+        self.version = version
+        self.game_port = game_port
+        self.steamid = steamid
+        self.spec_port = spec_port
+        self.spec_name = spec_name
+        self.tags = tags.split(",") if tags else None
+        self.gameid = gameid

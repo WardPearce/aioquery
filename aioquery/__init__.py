@@ -8,7 +8,7 @@ from .data_operations import DataOperations
 from .exceptions import UnableToConnect, DidNotReceive, InvalidServer
 
 
-__version__ = "1.1.4"
+__version__ = "1.1.5"
 __url__ = "https://aioquery.readthedocs.io/en/latest/"
 __description__ = "Asynchronous source A2S."
 __author__ = "WardPearce"
@@ -92,7 +92,7 @@ class Server:
         header = data_opts.byte()
 
         if chr(header) == self.S2A_INFO_SOURCE:
-            result = {
+            paramters = {
                 "protocol": data_opts.byte(),
                 "hostname": data_opts.string(),
                 "map": data_opts.string(),
@@ -113,22 +113,22 @@ class Server:
                 edf = data_opts.byte()  # Extra Data Flag
 
                 if edf & 0x80:
-                    result["game_port"] = data_opts.short()
+                    paramters["game_port"] = data_opts.short()
 
                 if edf & 0x10:
-                    result["steamid"] = data_opts.long_long()
+                    paramters["steamid"] = data_opts.long_long()
 
                 if edf & 0x40:
-                    result["spec_port"] = data_opts.short()
-                    result["spec_name"] = data_opts.string()
+                    paramters["spec_port"] = data_opts.short()
+                    paramters["spec_name"] = data_opts.string()
 
                 if edf & 0x20:
-                    result["tags"] = data_opts.string().split(",")
+                    paramters["tags"] = data_opts.string()
 
                 if edf & 0x01:
-                    result["gameid"] = data_opts.long_long()
+                    paramters["gameid"] = data_opts.long_long()
 
-            return ServerModel(result)
+            return ServerModel(**paramters)
         else:
             raise InvalidServer()
 
@@ -163,11 +163,9 @@ class Server:
         for index in range(number):
             data_opts.byte()
 
-            player = {
-                "id": index + 1,
-                "name": data_opts.string(),
-                "frags": data_opts.long(),
-                "time": data_opts.float()
-            }
-
-            yield PlayerModel(player)
+            yield PlayerModel(
+                id=index + 1,
+                name=data_opts.string(),
+                frags=data_opts.long(),
+                time=data_opts.float()
+            )
