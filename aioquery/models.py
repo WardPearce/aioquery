@@ -99,7 +99,8 @@ class ServerModel:
             ENCODING_LATIN).decode(ENCODING_UTF)
         self.map = data["map"]
         self.game_dir = data["game_dir"]
-        self.game_desc = data["game_desc"]
+        self.game_desc = data["game_desc"].encode(
+            ENCODING_LATIN).decode(ENCODING_UTF)
         self.app_id = data["app_id"]
         self.players = data["players"]
         self.max_players = data["max_players"]
