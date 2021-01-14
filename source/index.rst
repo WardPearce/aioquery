@@ -5,7 +5,7 @@
 
 Welcome to aioquery's documentation!
 ====================================
-Aioquery is a small source A2S wrapper.
+Lightweight asynchronous A2S wrapper, uses modern python for clear typing & affective memory use.
 
 **Features:**
 
