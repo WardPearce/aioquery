@@ -1,17 +1,20 @@
-name: Python application
+name: Base development workflow
 
-on: [push]
+on:
+  push:
+    branches:
+    - Development
 
 jobs:
-  build:
+  base-production:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v1
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v1
+      - uses: actions/checkout@v2.3.2
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
         with:
-          python-version: 3.7
+          python-version: 3.9
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -23,5 +26,12 @@ jobs:
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude .git,__pycache__,docs/source/conf.py,old,build,dist
           # exit-zero treats all errors as warnings
           flake8 . --count --max-line-length=80 --statistics --exclude .git,__pycache__,docs/source/conf.py,old,build,dist
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - name: Install pyright
+        run: npm install pyright -g
+      - name: Run pyright
+        run: pyright aioquery/*.py
       - name: Run unit tests
         run: python run_tests.py
