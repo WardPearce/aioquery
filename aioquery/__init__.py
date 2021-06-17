@@ -1,4 +1,4 @@
-import typing
+from typing import Union, AsyncGenerator, cast
 
 from asyncio_dgram import connect
 from asyncio import wait_for, TimeoutError
@@ -8,7 +8,7 @@ from .data_operations import DataOperations
 from .exceptions import UnableToConnect, DidNotReceive, InvalidServer
 
 
-__version__ = "1.1.5"
+__version__ = "1.1.6"
 __url__ = "https://aioquery.readthedocs.io/en/latest/"
 __description__ = "Asynchronous source A2S."
 __author__ = "WardPearce"
@@ -17,7 +17,7 @@ __license__ = "Apache-2.0 License"
 
 
 class Server:
-    _challenge = None
+    _challenge: Union[bytes, None] = None
 
     S2A_INFO_SOURCE = chr(0x49)
 
@@ -141,7 +141,7 @@ class Server:
 
         return self._challenge
 
-    async def players(self) -> typing.AsyncGenerator[PlayerModel, None]:
+    async def players(self) -> AsyncGenerator[PlayerModel, None]:
         """Yields players on server.
 
         Yields
@@ -154,7 +154,9 @@ class Server:
             await self.challenge()
 
         data_opts = DataOperations(
-            (await self._send_recv(self.A2S_PLAYERS + self._challenge))[4:]
+            (await self._send_recv(
+                self.A2S_PLAYERS + cast(bytes, self._challenge)
+            ))[4:]
         )
 
         data_opts.byte()
