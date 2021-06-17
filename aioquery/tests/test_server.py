@@ -28,17 +28,20 @@ class AioQueryTest(asynctest.TestCase):
             else:
                 break
 
+        if not self.client:
+            raise Exception("None of the servers are valid in test_servers")
+
     async def test_server(self):
         self.assertIsNot(self.client, None)
 
-        info = await self.client.info()
+        info = await self.client.info()  # type: ignore
 
         self.assertTrue(type(info) == ServerModel)
 
     async def test_players(self):
         self.assertIsNot(self.client, None)
 
-        async for player in self.client.players():
+        async for player in self.client.players():   # type: ignore
             self.assertTrue(
                 type(player) == PlayerModel
             )
