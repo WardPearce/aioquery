@@ -1,4 +1,0 @@
-asyncio-dgram>=1.0.1
-asynctest>=0.13.
-sphinxcontrib-trio
-sphinx-material
